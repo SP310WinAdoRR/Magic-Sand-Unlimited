@@ -64,6 +64,17 @@ bool setWindowDimensions(ofGLFWWindowSettings& settings, int windowsNum) {
 
 //========================================================================
 int main() {
+	const char* envDataPath = getenv("OF_DATA_PATH");
+	if (envDataPath && envDataPath[0] != '\0') {
+		if (ofDirectory::doesDirectoryExist(envDataPath, false)) {
+			string p = ofFilePath::addTrailingSlash(envDataPath);
+			ofSetDataPathRoot(p);
+			cout << "[Magic-Sand] OF_DATA_PATH configurado exitosamente: " << p << endl;
+		} else {
+			cerr << "[Magic-Sand] Advertencia: OF_DATA_PATH no es un directorio accesible: " << envDataPath << endl;
+		}
+	}
+
 	ofGLFWWindowSettings settings;
 //	setFirstWindowDimensions(settings);
 	//settings.width = 1200;
