@@ -540,11 +540,11 @@ void CBoidGameController::setDebug(bool flag)
 
 	if (flag)
 	{
-		std::string BaseDir = "data//BoidGame//DebugFiles//";
+		std::string BaseDir = "data//boidGame//DebugFiles//";
 //		system("mkdir" + BaseDir.c_str());
 
 		// By default the application looks in data
-		debugBaseDir = "BoidGame//DebugFiles//";
+		debugBaseDir = "boidGame//DebugFiles//";
 	}
 }
 

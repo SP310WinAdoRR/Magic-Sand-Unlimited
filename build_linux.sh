@@ -335,17 +335,8 @@ mkdir -p "$DATA_ROOT/colorMaps"
 mkdir -p "$DATA_ROOT/mapGame/Scores"
 mkdir -p "$DATA_ROOT/mapGame/ReferenceData"
 mkdir -p "$DATA_ROOT/mapGame/DebugFiles"
-mkdir -p "$DATA_ROOT/BoidGame/DebugFiles"
+mkdir -p "$DATA_ROOT/boidGame/DebugFiles"
 mkdir -p "$DATA_ROOT/DebugFiles"
-
-# Migración transparente de datos existentes en ~/.config si existían de versiones previas
-LEGACY_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/Magic-Sand/data"
-if [ "$DATA_ROOT" != "$LEGACY_CONFIG" ] && [ -d "$LEGACY_CONFIG" ]; then
-    if [ ! -f "$DATA_ROOT/settings/calibration.xml" ]; then
-        echo "[Magic Sand] Migrando datos previos desde $LEGACY_CONFIG..."
-        cp -rn "$LEGACY_CONFIG/." "$DATA_ROOT/" 2>/dev/null || true
-    fi
-fi
 
 # Ubicación de los datos maestros incluidos en el AppImage
 TEMPLATE_DATA="$HERE/usr/share/magic-sand/data"
