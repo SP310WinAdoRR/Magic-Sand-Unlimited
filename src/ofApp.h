@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "ofxDatGui.h"
 #include "KinectProjector/KinectProjector.h"
 #include "SandSurfaceRenderer/SandSurfaceRenderer.h"
+#include "Games/BaseGameController.h"
 #include "Games/MapGameController.h"
 #include "Games/BoidGameController.h"
 

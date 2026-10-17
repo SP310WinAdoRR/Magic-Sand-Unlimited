@@ -24,12 +24,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #define _BoidGameController_h_
 
 #include "vehicle.h"
-#include "../KinectProjector/KinectProjector.h"
+#include "BaseGameController.h"
 
 //! Controller for the BOID game
 /** The seminal paper on BOIDS can be found here: http://www.red3d.com/cwr/papers/1987/boids.html
     A good tutorial is here: https://gamedevelopment.tutsplus.com/series/understanding-steering-behaviors--gamedev-12732 */
-class CBoidGameController
+class CBoidGameController : public BaseGameController
 {
 	public:
 		//! Default constructor
@@ -64,9 +64,6 @@ class CBoidGameController
 		bool isIdle();
 
 	private:
-		
-		std::shared_ptr<KinectProjector> kinectProjector;
-
 		void onButtonEvent(ofxDatGuiButtonEvent e);
 		void onToggleEvent(ofxDatGuiToggleEvent e);
 		void onSliderEvent(ofxDatGuiSliderEvent e);
@@ -86,11 +83,6 @@ class CBoidGameController
 
 		// 0: absolute beginner, 1: beginner, 2: medium, 3: expert
 		int GameDifficulty;
-
-		// Projector and kinect variables
-		ofVec2f projRes;
-		ofVec2f kinectRes;
-		ofRectangle kinectROI;
 
 		// Drawable area
 		ofRectangle projROI;

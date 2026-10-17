@@ -215,32 +215,49 @@ void CMapGameController::DrawScoreTexts()
 {
 	ofSetColor(10, 30, 200);
 
-	scoreFont.drawString(ScoreText, 100, 100);
-	scoreFont.drawString(HiScoreText, 100, projRes.y-100);
-
+	if (isInverted())
+	{
+		ofPushMatrix();
+		ofTranslate(projRes.x, projRes.y);
+		ofRotate(180.0f);
+		scoreFont.drawString(ScoreText, 100, 100);
+		scoreFont.drawString(HiScoreText, 100, projRes.y - 100);
+		ofPopMatrix();
+	}
+	else
+	{
+		scoreFont.drawString(ScoreText, 100, 100);
+		scoreFont.drawString(HiScoreText, 100, projRes.y - 100);
+	}
 }
 
 void CMapGameController::drawProjectorWindow()
 {
+	bool inv = isInverted();
+
 	if (ShowScore)
 	{
 		fboProjWindow.draw(0, 0);
 	}
 
 	eGameState sequence = GameSequence[CurrentGameSequence];
-	if (sequence == GAME_STATE_SHOWMAPNAME || sequence == GAME_STATE_SHOWSPLASHSCREEN)
+	if (sequence == GAME_STATE_SHOWMAPNAME || sequence == GAME_STATE_SHOWSPLASHSCREEN ||
+		sequence == GAME_STATE_PLAYANDSHOWCOUNTDOWN || sequence == GAME_STATE_CHECKFORISLAND)
 	{
-		fboProjWindow.draw(0, 0);
+		if (inv)
+		{
+			ofPushMatrix();
+			ofTranslate(projRes.x, projRes.y);
+			ofRotate(180.0f);
+			fboProjWindow.draw(0, 0);
+			ofPopMatrix();
+		}
+		else
+		{
+			fboProjWindow.draw(0, 0);
+		}
 	}
-	else if (sequence == GAME_STATE_PLAYANDSHOWCOUNTDOWN)
-	{
-		fboProjWindow.draw(0, 0);
-	}
-	else if (sequence == GAME_STATE_SHOWINTERMIDEATERESULT || sequence == GAME_STATE_CHECKFORISLAND)
-	{
-		fboProjWindow.draw(0, 0);
-	}
-	else if (sequence == GAME_STATE_SHOWFINALRESULT)
+	else if (sequence == GAME_STATE_SHOWINTERMIDEATERESULT || sequence == GAME_STATE_SHOWFINALRESULT)
 	{
 		fboProjWindow.draw(0, 0);
 	}
@@ -1420,10 +1437,10 @@ bool CMapGameController::MatchMap()
 
 	double maxDSC = 0;
 	double maxAngle = -1000;
-	//double StartAngle = -45;
-	//double EndAngle = 45;
-// 	double StartAngle = MinSearchAngle;
-// 	double EndAngle = MaxSearchAngle;
+
+	double searchCenter = isInverted() ? 0.0 : 180.0;
+	MinSearchAngle = searchCenter - 45.0;
+	MaxSearchAngle = searchCenter + 45.0;
 
 	// Check rotations
 	for (double angle = MinSearchAngle; angle <= MaxSearchAngle; angle++)

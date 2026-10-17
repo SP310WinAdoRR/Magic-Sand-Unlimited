@@ -37,7 +37,8 @@ projKinectCalibrationUpdated (false),
 imageStabilized (false),
 waitingForFlattenSand (false),
 drawKinectView(false),
-drawKinectColorView(true)
+drawKinectColorView(true),
+isInverted(false)
 {
 	doShowROIonProjector = false;
 	applicationState = APPLICATION_STATE_SETUP;
@@ -474,6 +475,26 @@ void KinectProjector::mouseDragged(int x, int y, int button)
 bool KinectProjector::getProjectionFlipped()
 {
 	return (kinectProjMatrix(0, 0) < 0);
+}
+
+void KinectProjector::setIsInverted(bool inv)
+{
+	isInverted = inv;
+}
+
+void KinectProjector::beginHUD()
+{
+	ofPushMatrix();
+	if (isInverted)
+	{
+		ofTranslate(projRes.x, projRes.y);
+		ofRotate(180.0f);
+	}
+}
+
+void KinectProjector::endHUD()
+{
+	ofPopMatrix();
 }
 
 
@@ -1404,6 +1425,7 @@ void KinectProjector::setupGui(){
     gui->addBreak();
     
     auto advancedFolder = gui->addFolder("Advanced", ofColor::purple);
+    advancedFolder->addToggle("Inverted", isInverted);
     advancedFolder->addToggle("Display kinect depth view", drawKinectView)->setName("Draw kinect depth view");
 	advancedFolder->addToggle("Display kinect color view", drawKinectColorView)->setName("Draw kinect color view");
 	advancedFolder->addToggle("Dump Debug", DumpDebugFiles);
@@ -1704,7 +1726,11 @@ bool KinectProjector::getDumpDebugFiles()
 }
 
 void KinectProjector::onToggleEvent(ofxDatGuiToggleEvent e){
-    if (e.target->is("Spatial filtering")) {
+    if (e.target->is("Inverted")) {
+        setIsInverted(e.checked);
+        saveSettings();
+    }
+    else if (e.target->is("Spatial filtering")) {
 		setSpatialFiltering(e.checked);
 	}
 	else if (e.target->is("Quick reaction")) {
@@ -1870,6 +1896,13 @@ bool KinectProjector::loadSettings(){
     numAveragingSlots = xml.getValue<int>("numAveragingSlots");
 	doInpainting = xml.getValue<bool>("OutlierInpainting", false);
 	doFullFrameFiltering = xml.getValue<bool>("FullFrameFiltering", false);
+	isInverted = xml.getValue<bool>("Inverted", false);
+	if (gui != nullptr) {
+		ofxDatGuiToggle* invToggle = gui->getToggle("Inverted");
+		if (invToggle != nullptr) {
+			invToggle->setChecked(isInverted);
+		}
+	}
     return true;
 }
 
@@ -1890,6 +1923,7 @@ bool KinectProjector::saveSettings()
     xml.addValue("numAveragingSlots", numAveragingSlots);
 	xml.addValue("OutlierInpainting", doInpainting);
 	xml.addValue("FullFrameFiltering", doFullFrameFiltering);
+	xml.addValue("Inverted", isInverted);
 	xml.setToParent();
     return xml.save(settingsFile);
 }

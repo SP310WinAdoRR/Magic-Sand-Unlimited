@@ -67,7 +67,7 @@ void CBoidGameController::setup(std::shared_ptr<KinectProjector> const& k)
 	showMotherFish = false;
 	showMotherRabbit = false;
 	motherPlatformSize = 30;
-	doFlippedDrawing = kinectProjector->getProjectionFlipped();
+	doFlippedDrawing = kinectProjector->getProjectionFlipped() ^ isInverted();
 
 	setupGui();
 }
@@ -77,6 +77,7 @@ void CBoidGameController::setup(std::shared_ptr<KinectProjector> const& k)
 void CBoidGameController::updateBOIDS()
 {
 	// Set static varible that indicate if all BOIDS should be drawn flipped
+	doFlippedDrawing = kinectProjector->getProjectionFlipped() ^ isInverted();
 	Vehicle::setDrawFlipped(doFlippedDrawing);
 
 	if (kinectProjector->isImageStabilized()) {
@@ -219,17 +220,23 @@ void CBoidGameController::PlayAndShowCountDown(int resultTime)
 	double sx = projROI.x + (projROI.width / 2 - sW/2);
 	double sy = projROI.y + 70;
 
-	scoreFont.drawString(timeString, sx, sy);
+	if (isInverted())
+	{
+		ofPushMatrix();
+		ofTranslate(projRes.x, projRes.y);
+		ofRotate(180.0f);
+		scoreFont.drawString(timeString, sx, sy);
+		ofPopMatrix();
+	}
+	else
+	{
+		scoreFont.drawString(timeString, sx, sy);
+	}
 }
 
 void CBoidGameController::DrawScoresOnFBO()
 {
 	ofSetColor(250, 250, 210);
-
-	//std::string P1ScoreStr = "Fish mass: " + ofToString((int)Player1Score) + "\n" +
-	//	"Food: " + ofToString((int)Player1Food) + "\n" +
-	//	"Skins: " + ofToString((int)Player1Skins) + "\n" +
-	//	"Score: " + ofToString((int)(Player1Skins + Player1Food));
 
 	std::string P1ScoreStr = 
 		"Food: " + ofToString((int)Player1Food) + "\n" +
@@ -242,27 +249,31 @@ void CBoidGameController::DrawScoresOnFBO()
 	double sx = projROI.x + (projROI.width / 4 - sW / 2);
 	double sy = projROI.y + 70;
 
-	scoreFontSmall.drawString(P1ScoreStr, sx, sy);
-
-	//std::string P2ScoreStr = "P2: " + ofToString((int)Player2Score);
 	std::string P2ScoreStr = 
 		"Food: " + ofToString((int)Player2Food) + "\n" +
 		"Skins: " + ofToString((int)Player2Skins) + "\n" +
 		"Score: " + ofToString((int)(Player2Skins + Player2Food));
 
-	//std::string P2ScoreStr = "Fish mass: " + ofToString((int)Player2Score) + "\n" +
-	//	"Food: " + ofToString((int)Player2Food) + "\n" +
-	//	"Skins: " + ofToString((int)Player2Skins) + "\n" +
-	//	"Score: " + ofToString((int)(Player2Skins + Player2Food));
+	double sW2 = scoreFontSmall.stringWidth(P2ScoreStr);
+	double sH2 = scoreFontSmall.stringHeight(P2ScoreStr);
 
+	double sx2 = projROI.x + (3 * projROI.width / 4 - sW2 / 2);
+	double sy2 = projROI.y + 70;
 
-	sW = scoreFontSmall.stringWidth(P1ScoreStr);
-	sH = scoreFontSmall.stringHeight(P1ScoreStr);
-
-	sx = projROI.x + (3 * projROI.width / 4 - sW / 2);
-	sy = projROI.y + 70;
-
-	scoreFontSmall.drawString(P2ScoreStr, sx, sy);
+	if (isInverted())
+	{
+		ofPushMatrix();
+		ofTranslate(projRes.x, projRes.y);
+		ofRotate(180.0f);
+		scoreFontSmall.drawString(P1ScoreStr, sx, sy);
+		scoreFontSmall.drawString(P2ScoreStr, sx2, sy2);
+		ofPopMatrix();
+	}
+	else
+	{
+		scoreFontSmall.drawString(P1ScoreStr, sx, sy);
+		scoreFontSmall.drawString(P2ScoreStr, sx2, sy2);
+	}
 
 	double xmid = kinectROI.x + kinectROI.width / 2;
 	double ymid = kinectROI.y + kinectROI.height / 2;
@@ -300,10 +311,20 @@ void CBoidGameController::DrawFinalScoresOnFBO()
 	else
 	{
 		sx = projROI.x + (3 * projROI.width / 4 - sW / 2);
-
 	}
 
-	scoreFont.drawString(scorestr, sx, sy);
+	if (isInverted())
+	{
+		ofPushMatrix();
+		ofTranslate(projRes.x, projRes.y);
+		ofRotate(180.0f);
+		scoreFont.drawString(scorestr, sx, sy);
+		ofPopMatrix();
+	}
+	else
+	{
+		scoreFont.drawString(scorestr, sx, sy);
+	}
 }
 
 void CBoidGameController::drawMainWindow(float x, float y, float width, float height) 
@@ -318,21 +339,20 @@ void CBoidGameController::drawProjectorWindow()
 	eGameState sequence = GameSequence[CurrentGameSequence];
 	if (sequence == GAME_STATE_SHOWSPLASHSCREEN)
 	{
-		fboVehicles.draw(0, 0);
+		if (isInverted())
+		{
+			ofPushMatrix();
+			ofTranslate(projRes.x, projRes.y);
+			ofRotate(180.0f);
+			fboVehicles.draw(0, 0);
+			ofPopMatrix();
+		}
+		else
+		{
+			fboVehicles.draw(0, 0);
+		}
 	}
-	else if (sequence == GAME_STATE_PLAYANDSHOWCOUNTDOWN)
-	{
-		fboVehicles.draw(0, 0);
-	}
-	else if (sequence == GAME_STATE_SHOWINTERMIDEATERESULT)
-	{
-		fboVehicles.draw(0, 0);
-	}
-	else if (sequence == GAME_STATE_SHOWFINALRESULT)
-	{
-		fboVehicles.draw(0, 0);
-	}
-	else if (sequence == GAME_STATE_IDLE)
+	else
 	{
 		fboVehicles.draw(0, 0);
 	}
@@ -531,7 +551,7 @@ void CBoidGameController::setKinectRes(ofVec2f& KR)
 void CBoidGameController::setKinectROI(ofRectangle &KROI)
 {
 	kinectROI = KROI;
-	doFlippedDrawing = kinectProjector->getProjectionFlipped();
+	doFlippedDrawing = kinectProjector->getProjectionFlipped() ^ isInverted();
 }
 
 void CBoidGameController::setDebug(bool flag)

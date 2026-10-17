@@ -26,12 +26,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 #include "ReferenceMapHandler.h"
-#include "../KinectProjector/KinectProjector.h"
 #include "SandboxScoreTracker.h"
+#include "BaseGameController.h"
 
 //! Controller for the mapper game
 /**  */
-class CMapGameController
+class CMapGameController : public BaseGameController
 {
 	public:
 		//! Default constructor
@@ -74,9 +74,6 @@ class CMapGameController
 		void setDebug(bool flag);
 
 	private:
-		
-		std::shared_ptr<KinectProjector> kinectProjector;
-
 		// Get the actual depth image
 		bool GetActualBinaryLandImage();
 
@@ -142,11 +139,6 @@ class CMapGameController
 
 		bool doShowMatchResultContourLines;
 
-		// Projector and kinect variables
-		ofVec2f projRes;
-		ofVec2f kinectRes;
-		ofRectangle kinectROI;
-
 		// Binary version of land image
 		ofxCvGrayscaleImage BinaryLandImage;
 
@@ -211,7 +203,6 @@ class CMapGameController
 		void SetupGameSequence();
 		bool ComputeWhereInSequence(int &currentStep, int &totalSteps);
 
-		bool debugOn;
 		std::string debugBaseDir;
 };
 

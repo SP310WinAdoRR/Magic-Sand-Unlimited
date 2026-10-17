@@ -117,6 +117,13 @@ public:
 	// Depending on the mount direction of the Kinect, projections can be flipped. 
 	bool getProjectionFlipped();
 
+	// Inverted setup support
+	bool getIsInverted() const { return isInverted; }
+	void setIsInverted(bool inv);
+	void beginHUD();
+	void endHUD();
+	ofVec2f getProjRes() const { return projRes; }
+
 
     // Getter and setter
     ofTexture & getTexture(){
@@ -366,7 +373,9 @@ private:
     ofxDatGui* gui;
 	ofxDatGui* StatusGUI;
 	std::string calibrationText;
-	
+	// Inverted setup flag
+	bool isInverted;
+
 	// Debug functions
 	bool DumpDebugFiles;
 	std::string DebugFileOutDir;
