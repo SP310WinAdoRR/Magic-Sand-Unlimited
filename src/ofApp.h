@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "Games/BaseGameController.h"
 #include "Games/MapGameController.h"
 #include "Games/BoidGameController.h"
+#include "Games/RemoteGameController.h"
 
 class ofApp : public ofBaseApp {
 
@@ -58,6 +59,7 @@ private:
 	SandSurfaceRenderer* sandSurfaceRenderer;
 	CMapGameController mapGameController;
 	CBoidGameController boidGameController;
+	CRemoteGameController remoteGameController;
 
 	// Main window ROI 
 	ofRectangle mainWindowROI;

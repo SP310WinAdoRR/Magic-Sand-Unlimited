@@ -58,6 +58,11 @@ void ofApp::setup() {
 	boidGameController.setKinectRes(kinectRes);
 	boidGameController.setKinectROI(kinectROI);
 
+	remoteGameController.setup(kinectProjector);
+	remoteGameController.setProjectorRes(projRes);
+	remoteGameController.setKinectRes(kinectRes);
+	remoteGameController.setKinectROI(kinectROI);
+
 }
 
 
@@ -72,10 +77,12 @@ void ofApp::update() {
 		ofRectangle kinectROI = kinectProjector->getKinectROI();
 		mapGameController.setKinectROI(kinectROI);
 		boidGameController.setKinectROI(kinectROI);
+		remoteGameController.setKinectROI(kinectROI);
 	}
 
 	mapGameController.update();
 	boidGameController.update();
+	remoteGameController.update();
 }
 
 
@@ -90,6 +97,7 @@ void ofApp::draw()
 	{
 		sandSurfaceRenderer->drawMainWindow(x, y, w, h);//400, 20, 400, 300);
 		boidGameController.drawMainWindow(x, y, w, h);
+		remoteGameController.drawMainWindow(x, y, w, h);
 	}
 
 	kinectProjector->drawMainWindow(x, y, w, h);
@@ -102,6 +110,7 @@ void ofApp::drawProjWindow(ofEventArgs &args)
 		sandSurfaceRenderer->drawProjectorWindow();
 		mapGameController.drawProjectorWindow();
 		boidGameController.drawProjectorWindow();
+		remoteGameController.drawProjectorWindow();
 	}
 	kinectProjector->drawProjectorWindow();
 }
@@ -201,6 +210,13 @@ void ofApp::keyPressed(int key)
 	{
 		mapGameController.setDebug(kinectProjector->getDumpDebugFiles());
 		mapGameController.DebugTestMe();
+	}
+	else if (key == 'b' || key == 'B')
+	{
+		if (kinectProjector->GetApplicationState() == KinectProjector::APPLICATION_STATE_RUNNING)
+		{
+			remoteGameController.toggleBridge();
+		}
 	}
 }
 
