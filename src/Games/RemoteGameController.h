@@ -7,6 +7,7 @@ sand elevation data (port 7000) and send projection render commands (port 7001).
 #pragma once
 
 #include "ofMain.h"
+#include "ofxDatGui.h"
 #include "BaseGameController.h"
 #include <vector>
 #include <string>
@@ -41,6 +42,7 @@ public:
     void setKinectRes(ofVec2f& KR) override;
     void setKinectROI(ofRectangle& KROI) override;
 
+    void setupGui();
     void toggleBridge();
     void startBridge();
     void stopBridge();
@@ -51,6 +53,9 @@ protected:
     void drawHUD() override;
 
 private:
+    void onToggleEvent(ofxDatGuiToggleEvent e);
+    void onButtonEvent(ofxDatGuiButtonEvent e);
+
     // Socket setup & teardown
     bool initSockets(const std::string& targetIp = "127.0.0.1", int txPort = 7000, int rxPort = 7001);
     void closeSockets();
@@ -68,6 +73,7 @@ private:
     void drawPieTimer(float cx, float cy, float radius, float ratio);
     void renderGameViewport(float x, float y, float w, float h, bool includeHud);
 
+    ofxDatGui* gui;
     bool bridgeActive;
     int sockTx;
     int sockRx;

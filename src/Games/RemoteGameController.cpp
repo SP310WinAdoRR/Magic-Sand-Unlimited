@@ -80,6 +80,7 @@ namespace {
 
 CRemoteGameController::CRemoteGameController()
     : BaseGameController(),
+      gui(nullptr),
       bridgeActive(false),
       sockTx(-1),
       sockRx(-1),
@@ -105,6 +106,10 @@ CRemoteGameController::CRemoteGameController()
 
 CRemoteGameController::~CRemoteGameController() {
     closeSockets();
+    if (gui) {
+        delete gui;
+        gui = nullptr;
+    }
 }
 
 void CRemoteGameController::setup(std::shared_ptr<KinectProjector> const& k) {
@@ -116,6 +121,41 @@ void CRemoteGameController::setup(std::shared_ptr<KinectProjector> const& k) {
     inspectFont.loadFont("verdana.ttf", 14);
 
     initSockets("127.0.0.1", 7000, 7001);
+    setupGui();
+}
+
+void CRemoteGameController::setupGui() {
+    gui = new ofxDatGui(ofxDatGuiAnchor::NO_ANCHOR);
+    gui->addToggle("Remote OSC Bridge", bridgeActive)->setStripeColor(ofColor::cyan);
+    gui->addButton("Clear Remote Overlay")->setStripeColor(ofColor::orange);
+    gui->addHeader(":: External Games (OSC) ::", false);
+
+    gui->onToggleEvent(this, &CRemoteGameController::onToggleEvent);
+    gui->onButtonEvent(this, &CRemoteGameController::onButtonEvent);
+    gui->setLabelAlignment(ofxDatGuiAlignment::CENTER);
+    gui->setPosition((ofGetWindowWidth() - gui->getWidth()) / 2, 0);
+    gui->setAutoDraw(false);
+}
+
+void CRemoteGameController::onToggleEvent(ofxDatGuiToggleEvent e) {
+    if (e.target->is("Remote OSC Bridge")) {
+        if (e.checked) {
+            startBridge();
+        } else {
+            stopBridge();
+        }
+    }
+}
+
+void CRemoteGameController::onButtonEvent(ofxDatGuiButtonEvent e) {
+    if (e.target->is("Clear Remote Overlay")) {
+        showTimer = false;
+        centerTitle = "";
+        centerSubtitle = "";
+        for (size_t i = 0; i < cellStates.size(); ++i) {
+            cellStates[i] = CellVisualState();
+        }
+    }
 }
 
 bool CRemoteGameController::initSockets(const std::string& targetIp, int txPort, int rxPort) {
@@ -152,7 +192,9 @@ bool CRemoteGameController::initSockets(const std::string& targetIp, int txPort,
         ioctlsocket(sockRx, FIONBIO, &mode);
 #else
         int flags = fcntl(sockRx, F_GETFL, 0);
-        fcntl(sockRx, F_SETFL, flags | O_NONBLOCK);
+        fcntl(sockTx, F_SETFL, flags | O_NONBLOCK);
+        int rxFlags = fcntl(sockRx, F_GETFL, 0);
+        fcntl(sockRx, F_SETFL, rxFlags | O_NONBLOCK);
 #endif
 
         struct sockaddr_in bindAddr;
@@ -201,11 +243,17 @@ void CRemoteGameController::toggleBridge() {
 
 void CRemoteGameController::startBridge() {
     bridgeActive = true;
+    if (gui) {
+        gui->getToggle("Remote OSC Bridge")->setChecked(true);
+    }
     ofLogNotice("RemoteGameController") << "Modo Bridge de Juego Remoto ACTIVADO.";
 }
 
 void CRemoteGameController::stopBridge() {
     bridgeActive = false;
+    if (gui) {
+        gui->getToggle("Remote OSC Bridge")->setChecked(false);
+    }
     ofLogNotice("RemoteGameController") << "Modo Bridge de Juego Remoto DESACTIVADO.";
 }
 
@@ -228,6 +276,10 @@ void CRemoteGameController::setKinectROI(ofRectangle& KROI) {
 void CRemoteGameController::update() {
     // Always poll incoming UDP commands; if an external game sends a packet, auto-activate if needed
     pollIncomingCommands();
+
+    if (gui) {
+        gui->update();
+    }
 
     if (!bridgeActive) {
         return;
@@ -390,7 +442,7 @@ void CRemoteGameController::parseOSCPacket(const uint8_t* data, size_t len) {
             cellStates.assign(gridCols * gridRows, CellVisualState());
         }
         if (!bridgeActive) {
-            bridgeActive = true;
+            startBridge();
         }
     } else if (address == "/render/grid/cell" && args.size() >= 5) {
         int idx = args[0].i;
@@ -635,6 +687,9 @@ void CRemoteGameController::drawPieTimer(float cx, float cy, float radius, float
 }
 
 void CRemoteGameController::drawMainWindow(float x, float y, float w, float h) {
+    if (gui) {
+        gui->draw();
+    }
     if (!bridgeActive) return;
 
     ofPushStyle();

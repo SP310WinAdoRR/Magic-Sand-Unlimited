@@ -108,9 +108,15 @@ void ofApp::drawProjWindow(ofEventArgs &args)
 	if (kinectProjector->GetApplicationState() == KinectProjector::APPLICATION_STATE_RUNNING)
 	{
 		sandSurfaceRenderer->drawProjectorWindow();
-		mapGameController.drawProjectorWindow();
-		boidGameController.drawProjectorWindow();
-		remoteGameController.drawProjectorWindow();
+		if (remoteGameController.isBridgeActive())
+		{
+			remoteGameController.drawProjectorWindow();
+		}
+		else
+		{
+			mapGameController.drawProjectorWindow();
+			boidGameController.drawProjectorWindow();
+		}
 	}
 	kinectProjector->drawProjectorWindow();
 }
