@@ -18,13 +18,13 @@ set -e
 # Comprobaciones iniciales del entorno anfitrión
 echo "==> Verificando dependencias en el sistema anfitrión..."
 if ! command -v docker > /dev/null 2>&1; then
-    echo "ERROR: Docker no está instalado en este equipo. Por favor instálalo para continuar."
+    echo "ERROR: Docker no está instalado en este sistema. Se requiere Docker para la compilación."
     exit 1
 fi
 
 if ! docker info > /dev/null 2>&1; then
-    echo "ERROR: El servicio de Docker no está en ejecución o el usuario no tiene permisos para acceder a él."
-    echo "Prueba iniciar el servicio (ej. 'sudo systemctl start docker') o añadir tu usuario al grupo 'docker'."
+    echo "ERROR: El servicio de Docker no está en ejecución o el usuario no cuenta con los permisos necesarios."
+    echo "Inicie el servicio (ej. 'sudo systemctl start docker') o configure los permisos correspondientes."
     exit 1
 fi
 
@@ -401,14 +401,14 @@ echo "==> [4/4] Ejecutando compilación y empaquetado dentro del contenedor Dock
 docker run --rm -v "$(pwd):/workspace" --privileged magic-sand-appimage-builder
 
 echo "=============================================================================="
-echo " ¡Compilación completada exitosamente!"
-echo " El archivo generado es: Magic-Sand-x86_64.AppImage"
+echo " Compilación completada exitosamente."
+echo " Archivo generado: Magic-Sand-x86_64.AppImage"
 echo ""
 echo " Notas de uso:"
-echo " - Datos mutables: Se guardan y cargan en ~/Magic-Sand/data/"
-echo "   (o en una carpeta ./data junto al AppImage si se usa en modo portable)."
-echo " - Primera ejecución: Solicitará permisos de superusuario para instalar"
-echo "   las reglas udev de Kinect y memoria de buffer USB."
-echo " - También puedes configurar Kinect manualmente ejecutando:"
+echo " - Datos mutables: Almacenados en ~/Magic-Sand/data/"
+echo "   (o en un directorio ./data junto al AppImage para modo portable)."
+echo " - Primera ejecución: Requiere privilegios de superusuario para registrar"
+echo "   las reglas udev de Kinect y configurar la memoria de buffer USB."
+echo " - Configuración manual de Kinect:"
 echo "   ./Magic-Sand-x86_64.AppImage --setup-kinect"
 echo "=============================================================================="

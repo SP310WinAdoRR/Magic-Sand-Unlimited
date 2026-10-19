@@ -5,7 +5,7 @@ set -e
 # Requiere permisos de superusuario (sudo)
 
 if [ "$EUID" -ne 0 ]; then
-  echo "Por favor, ejecuta este script como root o con sudo:"
+  echo "Este script requiere privilegios de superusuario (root o sudo):"
   echo "  sudo ./setup_kinect_linux.sh"
   exit 1
 fi
@@ -74,9 +74,9 @@ fi
 echo ""
 echo "=============================================="
 echo " Configuración completada."
-echo " RECOMENDACIÓN IMPORTANTE:"
-echo " 1. Si tu equipo tiene puertos USB 3.0 (azules) y USB 2.0 (negros),"
-echo "    conecta SIEMPRE el Kinect v1 a un puerto USB 2.0 o usa un HUB USB 2.0."
-echo " 2. Asegúrate de que el Kinect tenga conectado su adaptador a la toma de corriente (12V)."
+echo " RECOMENDACIONES DE CONECTIVIDAD:"
+echo " 1. Para garantizar estabilidad en la transferencia de datos isócronos de Kinect v1,"
+echo "    conecte el sensor a un puerto USB 2.0 nativo o a un concentrador USB 2.0 dedicado."
+echo " 2. Asegúrese de que el sensor cuente con su fuente de alimentación externa conectada (12V)."
 echo "=============================================="
 

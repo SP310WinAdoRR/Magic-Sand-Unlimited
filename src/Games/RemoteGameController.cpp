@@ -493,7 +493,7 @@ void CRemoteGameController::drawScene() {
     }
     ofPopStyle();
 
-    // Render the Pygame quadrants framed strictly within the calibrated sandbox bounds
+    // Render external game projection framed strictly within the calibrated sandbox bounds
     renderGameViewport(bounds.x, bounds.y, bounds.width, bounds.height, false);
 }
 
@@ -509,7 +509,7 @@ void CRemoteGameController::drawHUD() {
     ofPushStyle();
     ofEnableAlphaBlending();
 
-    // 1. Central translucent pie timer ("torta") centered inside calibrated bounds
+    // 1. Central translucent chronometer centered inside calibrated bounds
     if (showTimer && timerRatio > 0.001f) {
         float radius = std::min(width, height) * 0.20f;
         drawPieTimer(cx, cy, radius, timerRatio);
@@ -557,7 +557,7 @@ void CRemoteGameController::renderGameViewport(float x, float y, float w, float 
     ofPushStyle();
     ofEnableAlphaBlending();
 
-    // 1. Edge-to-edge quadrants
+    // 1. Grid quadrants
     for (int r = 0; r < gridRows; ++r) {
         for (int c = 0; c < gridCols; ++c) {
             int idx = r * gridCols + c;

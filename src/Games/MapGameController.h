@@ -121,7 +121,7 @@ class CMapGameController : public BaseGameController
 
 		void DrawScoreTexts();
 
-		// Since the OpenCV write functions does not work this hacky function is needed
+		// Fallback export function used when standard OpenCV matrix serialization is unavailable
 		bool WriteGreyOpenCVMat(cv::Mat &img, const std::string &fname);
 		bool WriteRGBOpenCVMat(cv::Mat &img, const std::string &fname);
 		cv::Rect ROI;
