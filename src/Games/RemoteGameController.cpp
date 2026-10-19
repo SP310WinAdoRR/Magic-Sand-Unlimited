@@ -449,24 +449,73 @@ void CRemoteGameController::parseOSCPacket(const uint8_t* data, size_t len) {
     }
 }
 
+ofRectangle CRemoteGameController::getCalibratedProjBounds() const {
+    ofRectangle fullRect(0.0f, 0.0f, projRes.x, projRes.y);
+    if (!kinectProjector || !kinectProjector->isCalibrated() || kinectROI.width <= 10.0f || kinectROI.height <= 10.0f) {
+        return fullRect;
+    }
+
+    float baseZ = kinectProjector->getBasePlaneOffset().z;
+    ofVec2f p1 = kinectProjector->kinectCoordToProjCoord(kinectROI.getMinX(), kinectROI.getMinY(), baseZ);
+    ofVec2f p2 = kinectProjector->kinectCoordToProjCoord(kinectROI.getMaxX(), kinectROI.getMinY(), baseZ);
+    ofVec2f p3 = kinectProjector->kinectCoordToProjCoord(kinectROI.getMinX(), kinectROI.getMaxY(), baseZ);
+    ofVec2f p4 = kinectProjector->kinectCoordToProjCoord(kinectROI.getMaxX(), kinectROI.getMaxY(), baseZ);
+
+    float minX = std::max(0.0f, std::min(std::min(p1.x, p2.x), std::min(p3.x, p4.x)));
+    float maxX = std::min(projRes.x, std::max(std::max(p1.x, p2.x), std::max(p3.x, p4.x)));
+    float minY = std::max(0.0f, std::min(std::min(p1.y, p2.y), std::min(p3.y, p4.y)));
+    float maxY = std::min(projRes.y, std::max(std::max(p1.y, p2.y), std::max(p3.y, p4.y)));
+
+    if (maxX - minX < 64.0f || maxY - minY < 64.0f) {
+        return fullRect;
+    }
+    return ofRectangle(minX, minY, maxX - minX, maxY - minY);
+}
+
 void CRemoteGameController::drawScene() {
-    renderGameViewport(0.0f, 0.0f, projRes.x, projRes.y, false);
+    ofRectangle bounds = getCalibratedProjBounds();
+
+    // Mask out projector overscan outside the calibrated sandbox ROI
+    ofPushStyle();
+    ofFill();
+    ofSetColor(0, 0, 0, 255);
+    if (bounds.y > 0.0f) {
+        ofDrawRectangle(0.0f, 0.0f, projRes.x, bounds.y);
+    }
+    if (bounds.getMaxY() < projRes.y) {
+        ofDrawRectangle(0.0f, bounds.getMaxY(), projRes.x, projRes.y - bounds.getMaxY());
+    }
+    if (bounds.x > 0.0f) {
+        ofDrawRectangle(0.0f, bounds.y, bounds.x, bounds.height);
+    }
+    if (bounds.getMaxX() < projRes.x) {
+        ofDrawRectangle(bounds.getMaxX(), bounds.y, projRes.x - bounds.getMaxX(), bounds.height);
+    }
+    ofPopStyle();
+
+    // Render the Pygame quadrants framed strictly within the calibrated sandbox bounds
+    renderGameViewport(bounds.x, bounds.y, bounds.width, bounds.height, false);
 }
 
 void CRemoteGameController::drawHUD() {
-    float width = projRes.x;
-    float height = projRes.y;
+    ofRectangle bounds = getCalibratedProjBounds();
+    float bx = bounds.x;
+    float by = bounds.y;
+    float width = bounds.width;
+    float height = bounds.height;
+    float cx = bx + width * 0.5f;
+    float cy = by + height * 0.5f;
 
     ofPushStyle();
     ofEnableAlphaBlending();
 
-    // 1. Central translucent pie timer ("torta")
+    // 1. Central translucent pie timer ("torta") centered inside calibrated bounds
     if (showTimer && timerRatio > 0.001f) {
         float radius = std::min(width, height) * 0.20f;
-        drawPieTimer(width * 0.5f, height * 0.5f, radius, timerRatio);
+        drawPieTimer(cx, cy, radius, timerRatio);
     }
 
-    // 2. Superimposed Round & Score inside safe zone
+    // 2. Superimposed Round & Score inside safe zone of the calibrated bounds
     float safeX = width * 0.12f;
     float safeY = height * 0.10f;
 
@@ -475,21 +524,19 @@ void CRemoteGameController::drawHUD() {
         std::string ptsStr = ofToString(currentScore) + " PTS";
 
         ofSetColor(0, 0, 0, 100);
-        hudFont.drawString(lvlStr, safeX + 2, safeY + 2);
+        hudFont.drawString(lvlStr, bx + safeX + 2, by + safeY + 2);
         float pw = hudFont.stringWidth(ptsStr);
-        hudFont.drawString(ptsStr, width - safeX - pw + 2, safeY + 2);
+        hudFont.drawString(ptsStr, bx + width - safeX - pw + 2, by + safeY + 2);
 
         ofSetColor(255, 255, 255, 140);
-        hudFont.drawString(lvlStr, safeX, safeY);
-        hudFont.drawString(ptsStr, width - safeX - pw, safeY);
+        hudFont.drawString(lvlStr, bx + safeX, by + safeY);
+        hudFont.drawString(ptsStr, bx + width - safeX - pw, by + safeY);
     }
 
     // 3. Centered translucent modal prompt (Welcome / Flatten sand / Game Over)
     if (!centerTitle.empty() && titleFont.isLoaded()) {
         float tw = titleFont.stringWidth(centerTitle);
         float th = titleFont.stringHeight(centerTitle);
-        float cx = width * 0.5f;
-        float cy = height * 0.5f;
 
         ofSetColor(0, 0, 0, 70);
         ofDrawRectRounded(cx - tw * 0.5f - 22.0f, cy - th * 0.5f - 14.0f, tw + 44.0f, th + 28.0f, 10.0f);
@@ -565,10 +612,11 @@ void CRemoteGameController::drawPieTimer(float cx, float cy, float radius, float
     float startAngle = -HALF_PI;
     float endAngle = startAngle + (TWO_PI * ratio);
 
+    int alpha = static_cast<int>(timerColor.a);
     if (ratio > 0.25f) {
-        ofSetColor(255, 255, 255, 75);
+        ofSetColor(timerColor.r, timerColor.g, timerColor.b, alpha);
     } else {
-        ofSetColor(255, 235, 80, 95);
+        ofSetColor(255, 235, 80, std::min(255, alpha + 20));
     }
 
     ofBeginShape();

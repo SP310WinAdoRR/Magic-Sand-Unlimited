@@ -63,7 +63,8 @@ private:
     void pollIncomingCommands();
     void parseOSCPacket(const uint8_t* data, size_t len);
 
-    // Helper for drawing the translucent pie timer
+    // Helper for drawing the translucent pie timer and framing within calibrated projector ROI
+    ofRectangle getCalibratedProjBounds() const;
     void drawPieTimer(float cx, float cy, float radius, float ratio);
     void renderGameViewport(float x, float y, float w, float h, bool includeHud);
 
